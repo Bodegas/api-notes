@@ -4,12 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon index.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "David Vázquez",
+  "license": "GPLv3",
   "dependencies": {
+    "express": "4.17.1",
     "http": "0.0.1-security"
+  },
+  "devDependencies": {
+    "nodemon": "2.0.12"
   }
 }
