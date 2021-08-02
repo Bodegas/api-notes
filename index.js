@@ -1,6 +1,7 @@
 const express = require("express");
-const { request } = require("http");
+
 const app = express();
+app.use(express.json());
 
 let contents = [
   { id: 1, content: "Content 1", color: "red" },
@@ -21,8 +22,8 @@ app.get("/api/contents", (request, response) => {
 
 app.get("/api/contents/:id", (request, response) => {
   const id = request.params.id;
-  const content = contents.find(content => content.id.toString() === id);
-  if(content){
+  const content = contents.find((content) => content.id.toString() === id);
+  if (content) {
     response.json(content);
   } else {
     response.status(404).end();
@@ -31,12 +32,20 @@ app.get("/api/contents/:id", (request, response) => {
 
 app.delete("/api/contents/:id", (request, response) => {
   const id = request.params.id;
-  contents = contents.filter(content => content.id.toString() !== id);
-  if(contents){
+  contents = contents.filter((content) => content.id.toString() !== id);
+  if (contents) {
     response.json(contents);
   } else {
     response.status(404).end();
   }
+});
+
+app.post("/api/contents", (request, response) => {
+  const body = request.body;
+  const ids = contents.map((content) => content.id);
+  const maxId = Math.max(...ids);
+  contents.push({ id: maxId + 1, ...body });
+  response.status(201).json(contents);
 });
 
 const PORT = 3001;
