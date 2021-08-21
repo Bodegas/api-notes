@@ -1,12 +1,13 @@
 {
-  "name": "first-api",
+  "name": "api-notes",
   "version": "1.0.0",
   "description": "",
   "main": "./src/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "NODE_ENV=development nodemon index.js",
+    "start": "NODE_ENV=production node index.js",
+    "test": "NODE_ENV=test jest --verbose --silent",
+    "lint": "npm run lint"
   },
   "author": "David Vázquez",
   "license": "GPLv3",
@@ -22,7 +23,9 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.23.4",
     "eslint-plugin-prettier": "3.4.0",
+    "jest": "27.0.6",
     "nodemon": "2.0.12",
-    "prettier": "2.3.2"
+    "prettier": "2.3.2",
+    "supertest": "6.1.6"
   }
 }

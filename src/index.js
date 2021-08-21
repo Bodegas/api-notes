@@ -29,7 +29,7 @@ app.get("/api/notes/:id", (request, response, next) => {
     .then(note => {
       note
         ? response.json(note)
-        : response.status(404).end("<h1>Note not found</h1>");
+        : response.status(404).end({ error: "Note not found" });
     })
     .catch(error => next(error));
 });
@@ -86,4 +86,11 @@ app.use(handleErrors);
 app.use(notFound);
 
 const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`Server runnig on port ${PORT}`));
+const server = app.listen(PORT, () =>
+  console.log(`Server runnig on port ${PORT}`)
+);
+
+module.exports = {
+  app,
+  server,
+};

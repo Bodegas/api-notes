@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
-console.log(process.env.MONGO_DB_URI);
-const connectionString = process.env.MONGO_DB_URI;
+const { NODE_ENV, MONGO_DB_URI, MONGO_DB_URI_TEST } = process.env;
+
+const connectionString = NODE_ENV === "test" ? MONGO_DB_URI_TEST : MONGO_DB_URI;
 
 mongoose
   .connect(connectionString, {
@@ -9,5 +10,9 @@ mongoose
     useFindAndModify: false,
     useCreateIndex: true,
   })
-  .then(() => console.log("Connected to notesDB"))
+  .then(
+    console.log(
+      `Connected to ${NODE_ENV === "test" ? "notesDBTest" : "notesDB"}`
+    )
+  )
   .catch(error => console.log(error));
