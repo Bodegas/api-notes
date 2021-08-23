@@ -29,7 +29,7 @@ app.get("/api/notes/:id", (request, response, next) => {
     .then(note => {
       note
         ? response.json(note)
-        : response.status(404).end({ error: "Note not found" });
+        : response.status(404).send({ error: "Note not found" });
     })
     .catch(error => next(error));
 });
@@ -39,8 +39,8 @@ app.delete("/api/notes/:id", (request, response, next) => {
   Note.findByIdAndDelete(id)
     .then(note =>
       note
-        ? response.status(204)
-        : response.status(404).end("<h1>Note not found</h1>")
+        ? response.status(204).end()
+        : response.status(404).send({ error: "Note not found" })
     )
     .catch(error => next(error));
 });
@@ -81,9 +81,8 @@ app.put("/api/notes/:id", (request, response, next) => {
     .catch(error => next(error));
 });
 
-app.use(handleErrors);
-
 app.use(notFound);
+app.use(handleErrors);
 
 const PORT = process.env.PORT;
 const server = app.listen(PORT, () =>
