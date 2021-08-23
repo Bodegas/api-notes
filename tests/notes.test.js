@@ -5,9 +5,10 @@ const Note = require("../src/models/Note");
 const {
   initialState,
   api,
-  getAllContentsFromNotes,
   wrongNoteId,
   notFoundId,
+  getAllContentsFromNotes,
+  createNewNote,
 } = require("./helpers");
 
 beforeEach(async () => {
@@ -77,12 +78,59 @@ describe("DELETE note", () => {
   });
 });
 
-// describe("CREATE note", () => {
-//   test("Create a note with content, important and date", () => {});
-//   test("Create a note with content, important and date", () => {});
-// });
+describe("CREATE note", () => {
+  test("Create a note with content, important and date", async () => {
+    const newNote = {
+      content: "New content",
+      date: new Date(),
+      imporant: false,
+    };
+    await createNewNote(newNote);
+  });
 
-// describe("UPDATE note", () => {});
+  test("Create a note only with content", async () => {
+    const newNote = {
+      content: "New content",
+    };
+    await createNewNote(newNote);
+  });
+
+  test("Can't create a incomplete note", async () => {
+    const newNote = {
+      date: new Date(),
+    };
+    const result = await api.post("/api/notes").send(newNote).expect(400);
+    expect(result.body.error).toBe("Content field is required");
+  });
+
+  test("Can't create a note with wrong url", async () => {
+    const newNote = {
+      content: "New content",
+      date: new Date(),
+      imporant: false,
+    };
+    await api.post("/api/notes/asdf").send(newNote).expect(404);
+  });
+});
+
+describe("UPDATE note", () => {
+  test("Update a note ", async () => {
+    const newNote = {
+      content: "New content",
+      date: new Date(),
+      imporant: false,
+    };
+    const { result } = await getAllContentsFromNotes();
+    const noteId = result.body[0].id;
+    const updatedNote = await api
+      .put(`/api/notes/${noteId}`)
+      .send(newNote)
+      .expect(200);
+    expect(updatedNote.body.content).toBe(newNote.content);
+    const { contents } = await getAllContentsFromNotes();
+    expect(contents).toContain(newNote.content);
+  });
+});
 
 afterAll(async () => {
   await server.close();

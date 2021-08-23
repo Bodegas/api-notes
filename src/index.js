@@ -59,8 +59,8 @@ app.post("/api/notes", (request, response) => {
 
   note
     .save()
-    .then(() => response.status(201))
-    .catch(() => response.status(500));
+    .then(() => response.status(201).end())
+    .catch(() => response.status(500).end());
 });
 
 app.put("/api/notes/:id", (request, response, next) => {
@@ -70,8 +70,7 @@ app.put("/api/notes/:id", (request, response, next) => {
   Note.findByIdAndUpdate(
     id,
     {
-      content: body.content,
-      important: body.important,
+      ...body,
     },
     { new: true }
   )
