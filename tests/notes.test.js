@@ -3,7 +3,7 @@ const { server } = require("../src/index");
 const Note = require("../src/models/Note");
 
 const {
-  initialState,
+  initialNotes,
   api,
   wrongNoteId,
   notFoundId,
@@ -13,7 +13,7 @@ const {
 
 beforeEach(async () => {
   await Note.deleteMany({});
-  for (const note of initialState) {
+  for (const note of initialNotes) {
     const newNote = new Note(note);
     await newNote.save();
   }
@@ -31,11 +31,11 @@ describe("Common", () => {
 describe("GET notes", () => {
   test("There are two notes", async () => {
     const { contents } = await getAllContentsFromNotes();
-    expect(contents).toHaveLength(initialState.length);
+    expect(contents).toHaveLength(initialNotes.length);
   });
   test("Obtain first note", async () => {
     const { contents } = await getAllContentsFromNotes();
-    expect(contents).toContain(initialState[0].content);
+    expect(contents).toContain(initialNotes[0].content);
   });
 });
 
@@ -45,7 +45,7 @@ describe("GET note", () => {
     const noteId = result.body[0].id;
     const resultNote = await api.get(`/api/notes/${noteId}`).expect(200);
     const note = resultNote.body;
-    expect(note.content).toBe(initialState[0].content);
+    expect(note.content).toBe(initialNotes[0].content);
   });
 
   test("Fetch a note with wrong id returns 400 error", async () => {
