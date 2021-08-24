@@ -2,23 +2,24 @@ const mongoose = require("mongoose");
 const { server } = require("../src/index");
 const User = require("../src/models/User");
 
-const { initialUsers, api, getAllUserNames } = require("./helpers");
+const { initialUsers, api, getAllUsers } = require("./helpers");
 
 beforeEach(async () => {
   await User.deleteMany({});
   for (const user of initialUsers) {
-    await user.save();
+    const newUser = new User(user);
+    await newUser.save();
   }
 });
 
 describe("Get users", () => {
   test("Get two users", async () => {
-    const { usernames } = await getAllUserNames();
+    const { usernames } = await getAllUsers();
     expect(usernames).toHaveLength(initialUsers.length);
   });
 
   test("Get first user", async () => {
-    const { usernames } = await getAllUserNames();
+    const { usernames } = await getAllUsers();
     expect(usernames).toContain(initialUsers[0].username);
   });
 });
@@ -45,7 +46,7 @@ describe("Creation users", () => {
       passwordHash: "1234",
     };
     await api.create("/api/users").send(newUser).expect(201);
-    const { usernames } = await getAllUserNames();
+    const { usernames } = await getAllUsers();
     expect(usernames).toHaveLength(initialUsers.length + 1);
     expect(usernames).toContain("michael");
   });

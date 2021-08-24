@@ -3,15 +3,16 @@ require("./mongo");
 
 const express = require("express");
 const cors = require("cors");
-const logger = require("./middleware/loggerMiddleware");
+// const logger = require("./middleware/loggerMiddleware");
 const handleErrors = require("./middleware/handleError");
 const notFound = require("./middleware/notFound");
 const Note = require("./models/Note");
+const User = require("./models/User");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(logger);
+// app.use(logger);
 
 app.get("/", (request, response) => {
   response.send("<h1>Api molona</h1>");
@@ -45,16 +46,25 @@ app.delete("/api/notes/:id", (request, response, next) => {
     .catch(error => next(error));
 });
 
-app.post("/api/notes", (request, response) => {
+app.post("/api/notes", async (request, response) => {
   const body = request.body;
   if (!body.content) {
     return response.status(400).json({ error: "Content field is required" });
+  }
+  if (!body.user) {
+    return response.status(400).json({ error: "User field is required" });
+  }
+
+  const user = await User.find({ id: request.body.user });
+  if (!user) {
+    return response.status(400).json({ error: "User not found" });
   }
 
   const note = new Note({
     content: body.content,
     date: new Date(),
     important: body.important,
+    user: user._id,
   });
 
   note

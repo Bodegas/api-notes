@@ -1,20 +1,26 @@
 const mongoose = require("mongoose");
 const { server } = require("../src/index");
 const Note = require("../src/models/Note");
+const User = require("../src/models/User");
 
 const {
   initialNotes,
+  initialUsers,
   api,
   wrongNoteId,
   notFoundId,
   getAllContentsFromNotes,
   createNewNote,
+  getAllUsers,
 } = require("./helpers");
 
 beforeEach(async () => {
   await Note.deleteMany({});
+  await User.deleteMany({});
+  const newUser = new User(initialUsers[0]);
+  const savedUser = await newUser.save();
   for (const note of initialNotes) {
-    const newNote = new Note(note);
+    const newNote = new Note({ ...note, user: savedUser._id });
     await newNote.save();
   }
 });
@@ -79,18 +85,21 @@ describe("DELETE note", () => {
 });
 
 describe("CREATE note", () => {
-  test("Create a note with content, important and date", async () => {
+  test("Create a note with content, important", async () => {
+    const { users } = await getAllUsers();
     const newNote = {
       content: "New content",
-      date: new Date(),
       imporant: false,
+      user: users[0]._id,
     };
     await createNewNote(newNote);
   });
 
-  test("Create a note only with content", async () => {
+  test("Create a note only with content and user", async () => {
+    const { users } = await getAllUsers();
     const newNote = {
       content: "New content",
+      user: users[0]._id,
     };
     await createNewNote(newNote);
   });

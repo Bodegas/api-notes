@@ -1,6 +1,7 @@
 const supertest = require("supertest");
 const { app } = require("../src/index");
 const api = supertest(app);
+const User = require("../src/models/User");
 
 const initialNotes = [
   {
@@ -20,11 +21,13 @@ const initialUsers = [
     name: "Neil McCauley",
     username: "neil",
     passwordHash: "1234",
+    notes: [],
   },
   {
     name: "Vincent Hanna",
     username: "vincent",
     passwordHash: "1234",
+    notes: [],
   },
 ];
 
@@ -41,11 +44,10 @@ const createNewNote = async newNote => {
   expect(contents).toContain(newNote.content);
 };
 
-const getAllUserNames = async () => {
-  const result = await api.get("/api/users").expect(200);
-  const users = result.body;
+const getAllUsers = async () => {
+  const users = await User.find({});
   const usernames = users.map(user => user.username);
-  return { result, usernames };
+  return { users, usernames };
 };
 
 const wrongNoteId = "6122f08dacdd864b280029e3asdf";
@@ -58,6 +60,6 @@ module.exports = {
   wrongNoteId,
   notFoundId,
   getAllContentsFromNotes,
+  getAllUsers,
   createNewNote,
-  getAllUserNames,
 };
