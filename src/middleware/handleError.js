@@ -4,6 +4,9 @@ const handleErrors = (error, request, response, next) => {
     response.status(400).send({ error: "id sent is wrong" });
     return;
   }
+  if (error.name === "ValidationError") {
+    response.status(400).send(error);
+  }
   response.status(500).end();
 };
 

@@ -7,7 +7,7 @@ const {
   initialNotes,
   initialUsers,
   api,
-  wrongNoteId,
+  wrongId,
   notFoundId,
   getAllContentsFromNotes,
   createNewNote,
@@ -18,9 +18,9 @@ beforeEach(async () => {
   await Note.deleteMany({});
   await User.deleteMany({});
   const newUser = new User(initialUsers[0]);
-  const savedUser = await newUser.save();
+  await newUser.save();
   for (const note of initialNotes) {
-    const newNote = new Note({ ...note, user: savedUser._id });
+    const newNote = new Note({ ...note, user: newUser.id });
     await newNote.save();
   }
 });
@@ -55,7 +55,7 @@ describe("GET note", () => {
   });
 
   test("Fetch a note with wrong id returns 400 error", async () => {
-    const result = await api.get(`/api/notes/${wrongNoteId}`).expect(400);
+    const result = await api.get(`/api/notes/${wrongId}`).expect(400);
     expect(result.body.error).toBe("id sent is wrong");
   });
   test("Fetch a note that not exists returns a 404", async () => {
@@ -75,7 +75,7 @@ describe("DELETE note", () => {
     expect(contents).not.toContain(noteToDelete.content);
   });
   test("Delete a note with wrong id returns 400", async () => {
-    const result = await api.delete(`/api/notes/${wrongNoteId}`).expect(400);
+    const result = await api.delete(`/api/notes/${wrongId}`).expect(400);
     expect(result.body.error).toBe("id sent is wrong");
   });
   test("Delete a note that not exists returns 404", async () => {
@@ -90,7 +90,7 @@ describe("CREATE note", () => {
     const newNote = {
       content: "New content",
       imporant: false,
-      user: users[0]._id,
+      user: users[0].id,
     };
     await createNewNote(newNote);
   });
@@ -99,7 +99,7 @@ describe("CREATE note", () => {
     const { users } = await getAllUsers();
     const newNote = {
       content: "New content",
-      user: users[0]._id,
+      user: users[0].id,
     };
     await createNewNote(newNote);
   });

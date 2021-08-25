@@ -2,7 +2,14 @@ const mongoose = require("mongoose");
 const { server } = require("../src/index");
 const User = require("../src/models/User");
 
-const { initialUsers, api, getAllUsers } = require("./helpers");
+const {
+  initialUsers,
+  wrongId,
+  notFoundId,
+  api,
+  getAllUsers,
+  getValidUser,
+} = require("./helpers");
 
 beforeEach(async () => {
   await User.deleteMany({});
@@ -14,8 +21,8 @@ beforeEach(async () => {
 
 describe("Get users", () => {
   test("Get two users", async () => {
-    const { usernames } = await getAllUsers();
-    expect(usernames).toHaveLength(initialUsers.length);
+    const { users } = await getAllUsers();
+    expect(users).toHaveLength(initialUsers.length);
   });
 
   test("Get first user", async () => {
@@ -25,16 +32,20 @@ describe("Get users", () => {
 });
 
 describe("Get user", () => {
-  test("Fetch an user by username that exists returns the user", async () => {
-    const username = initialUsers[0].username;
-    const result = await api.get(`/api/users/${username}`).expect(200);
+  test("Fetch an user by user that exists returns the user", async () => {
+    const { id, username } = await getValidUser();
+    const result = await api.get(`/api/users/${id}`).expect(200);
     expect(result.body.username).toBe(username);
   });
 
-  test("Fetch an user by username that doesn't exist return an error", async () => {
-    const username = "asdf";
-    const result = await api.get(`/api/users/${username}`).expect(404);
-    expect(result.body.error).toBe("User not exists");
+  test("Fetch an user by a wrong userId", async () => {
+    const result = await api.get(`/api/users/${wrongId}`).expect(400);
+    expect(result.body.error).toBe("id sent is wrong");
+  });
+
+  test("Fetch an user by user that doesn't exist return an error", async () => {
+    const result = await api.get(`/api/users/${notFoundId}`).expect(404);
+    expect(result.body.error).toBe("User not found");
   });
 });
 
@@ -43,9 +54,9 @@ describe("Creation users", () => {
     const newUser = {
       name: "Michael Mann",
       username: "michael",
-      passwordHash: "1234",
+      password: "1234",
     };
-    await api.create("/api/users").send(newUser).expect(201);
+    await api.post("/api/users").send(newUser).expect(201);
     const { usernames } = await getAllUsers();
     expect(usernames).toHaveLength(initialUsers.length + 1);
     expect(usernames).toContain("michael");
@@ -54,16 +65,23 @@ describe("Creation users", () => {
   test("Creation of an incomplete user fails", async () => {
     const newUser = {
       name: "Michael Mann",
-      passwordHash: "1234",
+      password: "1234",
     };
-    const result = await api.create("/api/users").send(newUser).expect(400);
-    expect(result.body.error).toBe("username is required");
+    const result = await api.post("/api/users").send(newUser).expect(400);
+    expect(result.body.error).toBe("Username field is required");
   });
 
   test("Creation of an user that already exists fails", async () => {
-    const newUser = initialUsers[0];
-    const result = await api.create("/api/users").send(newUser).expect(400);
-    expect(result.body.errors.username).toBe("user already exists");
+    const initialUser = initialUsers[0];
+    const newUser = {
+      name: initialUser.name,
+      username: initialUser.username,
+      password: initialUser.passwordHash,
+    };
+    const result = await api.post("/api/users").send(newUser).expect(400);
+    expect(result.body.errors.username.message).toContain(
+      "Error, expected `username` to be unique"
+    );
   });
 });
 

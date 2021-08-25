@@ -1,7 +1,6 @@
 const supertest = require("supertest");
 const { app } = require("../src/index");
 const api = supertest(app);
-const User = require("../src/models/User");
 
 const initialNotes = [
   {
@@ -45,20 +44,26 @@ const createNewNote = async newNote => {
 };
 
 const getAllUsers = async () => {
-  const users = await User.find({});
-  const usernames = users.map(user => user.username);
-  return { users, usernames };
+  const users = await api.get("/api/users").expect(200);
+  const usernames = users.body.map(user => user.username);
+  return { users: users.body, usernames };
 };
 
-const wrongNoteId = "6122f08dacdd864b280029e3asdf";
+const getValidUser = async () => {
+  const { users } = await getAllUsers();
+  return users[0];
+};
+
+const wrongId = "6122f08dacdd864b280029e3asdf";
 const notFoundId = "6122f08dacdd864b280029e4";
 
 module.exports = {
   initialNotes,
   initialUsers,
   api,
-  wrongNoteId,
+  wrongId,
   notFoundId,
+  getValidUser,
   getAllContentsFromNotes,
   getAllUsers,
   createNewNote,
