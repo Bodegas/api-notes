@@ -22,13 +22,22 @@ usersRouter.get("/:id", (request, response, next) => {
 
 usersRouter.delete("/:id", async (request, response, next) => {
   const { id } = request.params;
-  User.findByIdAndDelete(id)
-    .then(user =>
-      user
-        ? response.status(204).end()
-        : response.status(404).send({ error: "User not found" })
-    )
-    .catch(error => next(error));
+  try {
+    const user = await User.findByIdAndDelete(id);
+    if (user) {
+      for (const noteId of user.notes) {
+        let note = await Note.findById(noteId);
+        if (note) {
+          note.user = undefined;
+          await note.save();
+        }
+      }
+      return response.status(204).end();
+    }
+    response.status(404).send({ error: "Note not found" });
+  } catch (error) {
+    next(error);
+  }
 });
 
 usersRouter.post("/", async (request, response, next) => {
@@ -62,7 +71,7 @@ usersRouter.post("/", async (request, response, next) => {
 
   try {
     await user.save();
-    response.status(201).end();
+    response.status(201).json(user);
   } catch (error) {
     next(error);
   }

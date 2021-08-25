@@ -21,17 +21,24 @@ notesRouter.get("/:id", (request, response, next) => {
 
 notesRouter.delete("/:id", async (request, response, next) => {
   const { id } = request.params;
-  Note.findByIdAndDelete(id)
-    .then(note =>
-      note
-        ? response.status(204).end()
-        : response.status(404).send({ error: "Note not found" })
-    )
-    .catch(error => next(error));
+  try {
+    const note = await Note.findByIdAndDelete(id);
+    if (note) {
+      const user = await User.findById(note.user);
+      if (user) {
+        user.notes = user.notes.filter(note => note !== note._id);
+        await user.save();
+      }
+      return response.status(204).end();
+    }
+    response.status(404).send({ error: "Note not found" });
+  } catch (error) {
+    next(error);
+  }
 });
 
 notesRouter.post("/", async (request, response) => {
-  const { content, important, userId } = request.body;
+  const { content, important, user: userId } = request.body;
   if (!content) {
     return response.status(400).json({ error: "Content field is required" });
   }
@@ -52,10 +59,14 @@ notesRouter.post("/", async (request, response) => {
     user: user._id,
   });
 
-  note
-    .save()
-    .then(() => response.status(201).end())
-    .catch(() => response.status(500).end());
+  try {
+    await note.save();
+    user.notes = [...user.notes, note._id];
+    user.save();
+    response.status(201).json(note);
+  } catch (error) {
+    response.status(500).end();
+  }
 });
 
 notesRouter.put("/:id", (request, response, next) => {

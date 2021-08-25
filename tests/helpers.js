@@ -38,7 +38,8 @@ const getAllContentsFromNotes = async () => {
 };
 
 const createNewNote = async newNote => {
-  await api.post("/api/notes").send(newNote).expect(201);
+  const savedNote = await api.post("/api/notes").send(newNote).expect(201);
+  expect(savedNote.body.content).toBe(newNote.content);
   const { contents } = await getAllContentsFromNotes();
   expect(contents).toContain(newNote.content);
 };

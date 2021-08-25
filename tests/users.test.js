@@ -56,7 +56,8 @@ describe("Creation users", () => {
       username: "michael",
       password: "1234",
     };
-    await api.post("/api/users").send(newUser).expect(201);
+    const savedUser = await api.post("/api/users").send(newUser).expect(201);
+    expect(savedUser.body.username).toBe(newUser.username);
     const { usernames } = await getAllUsers();
     expect(usernames).toHaveLength(initialUsers.length + 1);
     expect(usernames).toContain("michael");
