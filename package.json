@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon index.js",
     "start": "NODE_ENV=production node index.js",
-    "test": "NODE_ENV=test jest --verbose --silent",
+    "test": "NODE_ENV=test PORT=3007 jest --verbose --silent --maxWorkers=1",
     "lint": "npm run lint"
   },
   "author": "David Vázquez",
