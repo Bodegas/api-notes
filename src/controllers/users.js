@@ -3,10 +3,17 @@ const bcrypt = require("bcrypt");
 const Note = require("../models/Note.js");
 const User = require("../models/User.js");
 
-usersRouter.get("/", (request, response, next) => {
-  User.find({})
-    .then(users => response.json(users))
-    .catch(error => next(error));
+usersRouter.get("/", async (request, response, next) => {
+  try {
+    const users = await User.find({}).populate("notes", {
+      content: 1,
+      date: 1,
+      importante: 1,
+    });
+    response.json(users);
+  } catch (error) {
+    next(error);
+  }
 });
 
 usersRouter.get("/:id", (request, response, next) => {
