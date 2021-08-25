@@ -31,23 +31,24 @@ notesRouter.delete("/:id", async (request, response, next) => {
 });
 
 notesRouter.post("/", async (request, response) => {
-  const body = request.body;
-  if (!body.content) {
+  const { content, important, userId } = request.body;
+  if (!content) {
     return response.status(400).json({ error: "Content field is required" });
   }
-  if (!body.user) {
+  if (!userId) {
     return response.status(400).json({ error: "User field is required" });
   }
 
-  const user = await User.find({ id: request.body.user });
+  const user = await User.findById(userId);
+  console.log(user);
   if (!user) {
     return response.status(400).json({ error: "User not found" });
   }
 
   const note = new Note({
-    content: body.content,
+    content: content,
     date: new Date(),
-    important: body.important,
+    important: important,
     user: user._id,
   });
 
