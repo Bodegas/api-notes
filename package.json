@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon index.js",
     "start": "NODE_ENV=production node index.js",
-    "test": "NODE_ENV=test PORT=3007 jest --verbose --silent --maxWorkers=1",
+    "test": "NODE_ENV=test PORT=3007 jest --verbose --silent --maxWorkers=1 ./tests/login.test.js",
     "lint": "npm run lint"
   },
   "author": "David Vázquez",
@@ -17,6 +17,7 @@
     "dotenv": "10.0.0",
     "express": "4.17.1",
     "http": "0.0.1-security",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "5.13.7",
     "mongoose-unique-validator": "2.0.3"
   },
