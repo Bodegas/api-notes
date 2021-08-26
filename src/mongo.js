@@ -15,4 +15,9 @@ mongoose
       `Connected to ${NODE_ENV === "test" ? "notesDBTest" : "notesDB"}`
     )
   )
-  .catch(error => console.log(error));
+  .catch(error => console.error(error));
+
+process.on("uncaughtException", error => {
+  console.error(error);
+  mongoose.disconnect();
+});
