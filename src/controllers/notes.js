@@ -1,6 +1,7 @@
 const notesRouter = require("express").Router();
 const Note = require("../models/Note.js");
 const User = require("../models/User.js");
+const tokenValidator = require("../middleware/tokenValidator");
 
 notesRouter.get("/", async (request, response, next) => {
   try {
@@ -43,17 +44,14 @@ notesRouter.delete("/:id", async (request, response, next) => {
   }
 });
 
-notesRouter.post("/", async (request, response) => {
-  const { content, important, user: userId } = request.body;
+notesRouter.post("/", tokenValidator, async (request, response) => {
+  const { content, important } = request.body;
+  const { userId } = request;
   if (!content) {
     return response.status(400).json({ error: "Content field is required" });
   }
-  if (!userId) {
-    return response.status(400).json({ error: "User field is required" });
-  }
 
   const user = await User.findById(userId);
-  console.log(user);
   if (!user) {
     return response.status(400).json({ error: "User not found" });
   }

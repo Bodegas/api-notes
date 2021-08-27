@@ -11,7 +11,7 @@ const {
   notFoundId,
   getAllContentsFromNotes,
   createNewNote,
-  getAllUsers,
+  getUserToken,
 } = require("./helpers");
 
 beforeEach(async () => {
@@ -85,40 +85,55 @@ describe("DELETE note", () => {
 });
 
 describe("CREATE note", () => {
-  test("Create a note with content, important", async () => {
-    const { users } = await getAllUsers();
+  test("Create a right note", async () => {
     const newNote = {
       content: "New content",
       imporant: false,
-      user: users[0].id,
     };
     await createNewNote(newNote);
   });
 
   test("Create a note only with content and user", async () => {
-    const { users } = await getAllUsers();
     const newNote = {
       content: "New content",
-      user: users[0].id,
     };
     await createNewNote(newNote);
   });
 
   test("Can't create a incomplete note", async () => {
+    const token = await getUserToken();
     const newNote = {
       date: new Date(),
     };
-    const result = await api.post("/api/notes").send(newNote).expect(400);
+    const result = await api
+      .post("/api/notes")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newNote)
+      .expect(400);
     expect(result.body.error).toBe("Content field is required");
   });
 
   test("Can't create a note with wrong url", async () => {
+    const token = await await getUserToken();
     const newNote = {
       content: "New content",
       date: new Date(),
       imporant: false,
     };
-    await api.post("/api/notes/asdf").send(newNote).expect(404);
+    await api
+      .post("/api/notes/asdf")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newNote)
+      .expect(404);
+  });
+
+  test("Can't create a note no token", async () => {
+    const newNote = {
+      content: "New content",
+      date: new Date(),
+      imporant: false,
+    };
+    await api.post("/api/notes").send(newNote).expect(401);
   });
 });
 
@@ -131,8 +146,10 @@ describe("UPDATE note", () => {
     };
     const { result } = await getAllContentsFromNotes();
     const noteId = result.body[0].id;
+    const token = await getUserToken();
     const updatedNote = await api
       .put(`/api/notes/${noteId}`)
+      .set("Authorization", `Bearer ${token}`)
       .send(newNote)
       .expect(200);
     expect(updatedNote.body.content).toBe(newNote.content);

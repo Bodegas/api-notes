@@ -1,6 +1,8 @@
 const supertest = require("supertest");
 const { app } = require("../src/index");
 const api = supertest(app);
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const initialNotes = [
   {
@@ -19,13 +21,15 @@ const initialUsers = [
   {
     name: "Neil McCauley",
     username: "neil",
-    passwordHash: "1234",
+    password: "1234",
+    passwordHash: bcrypt.hashSync("1234", 10),
     notes: [],
   },
   {
     name: "Vincent Hanna",
     username: "vincent",
-    passwordHash: "1234",
+    password: "1234",
+    passwordHash: bcrypt.hashSync("1234", 10),
     notes: [],
   },
 ];
@@ -37,8 +41,19 @@ const getAllContentsFromNotes = async () => {
   return { result, contents };
 };
 
+const getUserToken = async () => {
+  const { users } = await getAllUsers();
+  const { id, username } = users[0];
+  return jwt.sign({ id, username }, process.env.JWT_KEY);
+};
+
 const createNewNote = async newNote => {
-  const savedNote = await api.post("/api/notes").send(newNote).expect(201);
+  const token = await getUserToken();
+  const savedNote = await api
+    .post("/api/notes")
+    .set("Authorization", `Bearer ${token}`)
+    .send(newNote)
+    .expect(201);
   expect(savedNote.body.content).toBe(newNote.content);
   const { contents } = await getAllContentsFromNotes();
   expect(contents).toContain(newNote.content);
@@ -68,4 +83,5 @@ module.exports = {
   getAllContentsFromNotes,
   getAllUsers,
   createNewNote,
+  getUserToken,
 };
